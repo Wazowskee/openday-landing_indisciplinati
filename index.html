@@ -23,15 +23,22 @@
   }
 
   *,*::before,*::after{box-sizing:border-box;}
-  html{-webkit-text-size-adjust:100%;}
+  html{
+    -webkit-text-size-adjust:100%;
+    height:100%;
+    overflow:hidden;
+    overscroll-behavior:none;
+  }
   body{
     margin:0;
     background:var(--stage);
     color:var(--white);
     font-family:'Open Sans',sans-serif;
     overflow:hidden;
+    overscroll-behavior:none;
     height:100vh;
     height:100dvh;
+    max-height:100%;
   }
   h1,h2,h3{font-weight:600; margin:0; text-wrap:balance;}
   p{margin:0;}
@@ -744,6 +751,25 @@
 
 <script>
 /* =============================================================================
+   Google Consent Mode v2 — va inizializzato il prima possibile, PRIMA di
+   caricare gtag.js: per default tutti i segnali sono "denied" finché la
+   persona non accetta dal banner. Questo è lo standard richiesto da Google
+   (indipendente dal fatto che GA4 sia già configurato o meno).
+   ============================================================================= */
+window.dataLayer = window.dataLayer || [];
+function gtag(){ window.dataLayer.push(arguments); }
+gtag('consent', 'default', {
+  'analytics_storage': 'denied',
+  'ad_storage': 'denied',
+  'ad_user_data': 'denied',
+  'ad_personalization': 'denied',
+  'wait_for_update': 500
+});
+window.gtag = gtag;
+</script>
+
+<script>
+/* =============================================================================
    Cookie banner + tracciamento (GA4, Meta Pixel, Microsoft Clarity)
    - I cookie/script di statistica e marketing partono SOLO dopo il consenso.
    - La scelta dell'utente resta salvata sul suo browser (localStorage).
@@ -751,6 +777,15 @@
 (function(){
   var CONSENT_KEY = 'openday-cookie-consent';
   var cfg = window.SITE_CONFIG || {};
+
+  function updateGoogleConsent(analyticsGranted){
+    gtag('consent', 'update', {
+      'analytics_storage': analyticsGranted ? 'granted' : 'denied',
+      'ad_storage': analyticsGranted ? 'granted' : 'denied',
+      'ad_user_data': analyticsGranted ? 'granted' : 'denied',
+      'ad_personalization': analyticsGranted ? 'granted' : 'denied'
+    });
+  }
 
   function readConsent(){
     try{
@@ -770,10 +805,8 @@
     s.async = true;
     s.src = 'https://www.googletagmanager.com/gtag/js?id=' + cfg.ga4MeasurementId;
     document.head.appendChild(s);
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = window.gtag || function(){ window.dataLayer.push(arguments); };
-    window.gtag('js', new Date());
-    window.gtag('config', cfg.ga4MeasurementId);
+    gtag('js', new Date());
+    gtag('config', cfg.ga4MeasurementId);
   }
 
   function loadMetaPixel(){
@@ -825,6 +858,7 @@
 
   var existing = readConsent();
   if(existing){
+    updateGoogleConsent(existing.analytics);
     if(existing.analytics) enableTracking();
   } else {
     showBanner();
@@ -838,6 +872,7 @@
   if(btnAccept){
     btnAccept.addEventListener('click', function(){
       writeConsent(true);
+      updateGoogleConsent(true);
       enableTracking();
       hideBanner();
     });
@@ -845,6 +880,7 @@
   if(btnReject){
     btnReject.addEventListener('click', function(){
       writeConsent(false);
+      updateGoogleConsent(false);
       hideBanner();
     });
   }
@@ -852,6 +888,7 @@
     btnSavePrefs.addEventListener('click', function(){
       var analytics = !!(analyticsToggle && analyticsToggle.checked);
       writeConsent(analytics);
+      updateGoogleConsent(analytics);
       if(analytics) enableTracking();
       hideBanner();
     });
