@@ -4,6 +4,45 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Open Day</title>
+<script>
+(function(){
+  /* Alcuni browser in-app (es. WhatsApp su iPhone) calcolano l'altezza
+     reale della finestra in modo sbagliato (troppo corta) al primissimo
+     caricamento della pagina, e la correggono solo dopo un refresh
+     manuale. Per evitarlo misuriamo l'altezza reale disponibile e la
+     scriviamo come variabile CSS, con una strategia "non rimpicciolire
+     mai, solo crescere" cosi non veniamo tratti in inganno da una prima
+     misura troppo bassa; un cambio di orientamento resetta il massimo
+     perche in quel caso l'altezza deve davvero poter diminuire. */
+  var root = document.documentElement;
+  var maxH = 0;
+  function setAppHeight(h, force){
+    if(!h) return;
+    if(force || h > maxH){
+      maxH = h;
+      root.style.setProperty('--app-height', maxH + 'px');
+    }
+  }
+  function measure(){
+    var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    setAppHeight(h);
+  }
+  measure();
+  window.addEventListener('resize', measure);
+  window.addEventListener('orientationchange', function(){
+    maxH = 0;
+    setTimeout(measure, 50);
+    setTimeout(measure, 300);
+  });
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', measure);
+  }
+  document.addEventListener('DOMContentLoaded', measure);
+  [0, 50, 150, 300, 600, 1000, 1500].forEach(function(delay){
+    setTimeout(measure, delay);
+  });
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fascinate&family=Open+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -55,6 +94,7 @@
     position:relative;
     min-height:100vh;
     min-height:100svh;
+    min-height:var(--app-height, 100svh);
     overflow:hidden;
   }
 
@@ -321,6 +361,7 @@
     padding:16px 22px calc(16px + env(safe-area-inset-bottom,0px));
     box-shadow:0 -8px 26px rgba(0,0,0,.45);
     max-height:calc(100vh - 40px);
+    max-height:calc(100svh - 40px);
     overflow-y:auto;
     transform:translateY(120%);
     transition:transform .5s cubic-bezier(.65,0,.35,1);
@@ -698,6 +739,8 @@
   </div>
 
   <audio id="bgMusic" src="musica.mp3" loop preload="auto"></audio>
+  <audio id="sfxCurtainOpen" src="sipario-apre.mp3" preload="auto"></audio>
+  <audio id="sfxCurtainClose" src="sipario-chiude.mp3" preload="auto"></audio>
 
   <div class="modal-overlay" id="modalOverlay" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
@@ -951,6 +994,45 @@ window.gtag = gtag;
   var current = 'home';
   var pending = false;
 
+  /* ---------- Suoni del sipario ---------- */
+  var sfxOpen = document.getElementById('sfxCurtainOpen');
+  var sfxClose = document.getElementById('sfxCurtainClose');
+  if(sfxOpen){ sfxOpen.volume = 0.85; }
+  if(sfxClose){ sfxClose.volume = 0.85; }
+
+  /* I browser bloccano l'audio con suono finche' non c'e' stata
+     un'interazione dell'utente: il sipario che si apre da solo al
+     caricamento non ha nessun gesto a monte, quindi se il primo
+     tentativo viene bloccato lo mettiamo in coda e lo riproviamo al
+     primo tocco/click/tasto sulla pagina. I suoni legati ai click sulla
+     barra di navigazione, invece, partono gia' dentro un gesto
+     dell'utente e di solito non hanno bisogno di questo fallback. */
+  var sfxGestureQueue = [];
+  function queueSfxForGesture(el){
+    if(el && sfxGestureQueue.indexOf(el) === -1){ sfxGestureQueue.push(el); }
+  }
+  function flushSfxGestureQueue(){
+    if(!sfxGestureQueue.length) return;
+    sfxGestureQueue.forEach(function(el){
+      try{ el.currentTime = 0; }catch(e){}
+      var p = el.play();
+      if(p && p.catch){ p.catch(function(){}); }
+    });
+    sfxGestureQueue = [];
+  }
+  document.addEventListener('touchstart', flushSfxGestureQueue, {passive:true});
+  document.addEventListener('click', flushSfxGestureQueue);
+  document.addEventListener('keydown', flushSfxGestureQueue);
+
+  function playSfx(el, retryOnGesture){
+    if(!el) return;
+    try{ el.currentTime = 0; }catch(e){}
+    var p = el.play();
+    if(p && p.catch){
+      p.catch(function(){ if(retryOnGesture){ queueSfxForGesture(el); } });
+    }
+  }
+
   /* Il sipario è chiuso di default via CSS (nessun flash iniziale a sipario
      aperto): qui aggiungiamo solo la classe che lo apre, con un piccolo
      ritardo, come all'inizio di uno spettacolo. */
@@ -971,9 +1053,11 @@ window.gtag = gtag;
     if(reduceMotion){ activatePage(target); return; }
     pending = true;
     stage.classList.remove('is-open');
+    playSfx(sfxClose, false);
     window.setTimeout(function(){
       activatePage(target);
       stage.classList.add('is-open');
+      playSfx(sfxOpen, false);
       window.setTimeout(function(){ pending = false; }, 760);
     }, 760);
   }
@@ -987,6 +1071,7 @@ window.gtag = gtag;
   if(!reduceMotion){
     window.setTimeout(function(){
       stage.classList.add('is-open');
+      playSfx(sfxOpen, true);
       window.setTimeout(function(){ pending = false; }, 760);
     }, 500);
   }
