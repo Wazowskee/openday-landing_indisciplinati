@@ -1,4 +1,18 @@
 <title>Open Day</title>
+<script>
+(function(){
+  function setAppHeight(){
+    var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    document.documentElement.style.setProperty('--app-height', h + 'px');
+  }
+  setAppHeight();
+  window.addEventListener('resize', setAppHeight);
+  window.addEventListener('orientationchange', setAppHeight);
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', setAppHeight);
+  }
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fascinate&family=Open+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -38,6 +52,7 @@
     overscroll-behavior:none;
     height:100vh;
     height:100dvh;
+    height:var(--app-height, 100dvh);
     max-height:100%;
   }
   h1,h2,h3{font-weight:600; margin:0; text-wrap:balance;}
@@ -51,7 +66,12 @@
   .icon-fill{fill:currentColor; stroke:none;}
 
   /* ---------- App shell ---------- */
-  #app{position:fixed; inset:0; overflow:hidden;}
+  #app{
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    height:100vh;
+    height:var(--app-height, 100vh);
+    overflow:hidden;
+  }
 
   .frame{
     position:absolute;
