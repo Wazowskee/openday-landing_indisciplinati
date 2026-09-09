@@ -13,9 +13,22 @@
   setAppHeight();
   window.addEventListener('resize', setAppHeight);
   window.addEventListener('orientationchange', setAppHeight);
+  window.addEventListener('pageshow', setAppHeight);
+  window.addEventListener('load', setAppHeight);
+  document.addEventListener('DOMContentLoaded', setAppHeight);
+  document.addEventListener('visibilitychange', setAppHeight);
   if(window.visualViewport){
     window.visualViewport.addEventListener('resize', setAppHeight);
+    window.visualViewport.addEventListener('scroll', setAppHeight);
   }
+  /* Alcuni browser in-app (es. quello integrato in WhatsApp) riportano
+     un'altezza visibile sbagliata nel primissimo istante, prima che la
+     loro barra degli strumenti si sia assestata: ricontrolliamo per un
+     paio di secondi dopo il caricamento, cosi' la pagina si corregge da
+     sola senza bisogno che l'utente tocchi lo schermo. */
+  [50, 150, 300, 500, 800, 1200, 2000].forEach(function(delay){
+    setTimeout(setAppHeight, delay);
+  });
 })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
