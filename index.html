@@ -748,6 +748,7 @@
   <audio id="bgMusic" src="musica.mp3" loop preload="auto"></audio>
   <audio id="sfxCurtainOpen" src="sipario-apre.mp3" preload="auto"></audio>
   <audio id="sfxCurtainClose" src="sipario-chiude.mp3" preload="auto"></audio>
+  <audio id="sfxApplause" src="applauso.mp3" preload="auto"></audio>
 
   <div class="modal-overlay" id="modalOverlay" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
@@ -1204,6 +1205,13 @@ window.gtag = gtag;
     stepLabel.hidden = true;
     success.hidden = false;
     fireConfetti();
+
+    var applauseSfx = document.getElementById('sfxApplause');
+    if(applauseSfx){
+      try{ applauseSfx.currentTime = 0; }catch(e){}
+      var applauseP = applauseSfx.play();
+      if(applauseP && applauseP.catch){ applauseP.catch(function(){}); }
+    }
   });
 
   function fireConfetti(){
