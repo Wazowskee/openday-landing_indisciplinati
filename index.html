@@ -1229,6 +1229,12 @@ window.gtag = gtag;
 
   audio.volume = 0.55;
 
+  /* Un solo stato "vero", cosi' non ci sono ambiguita' su cosa fare
+     quando il primo tocco dell'utente e' proprio sull'icona: wantsMusic
+     rappresenta quello che l'utente vuole (musica accesa/spenta), non
+     lo stato istantaneo (a volte incerto) dell'elemento <audio>. */
+  var wantsMusic = true;
+
   function setIcon(playing){
     iconUse.setAttribute('href', playing ? '#icon-sound-on' : '#icon-sound-off');
     btn.classList.toggle('is-muted', !playing);
@@ -1236,41 +1242,42 @@ window.gtag = gtag;
     btn.setAttribute('aria-label', playing ? 'Disattiva la musica' : 'Attiva la musica');
   }
 
-  var userPaused = false;
-
-  function tryAutoplay(){
-    if(userPaused) return;
+  function attemptPlay(){
+    if(!wantsMusic) return;
     var p = audio.play();
-    if(p && p.catch){
-      p.then(function(){ setIcon(true); }).catch(function(){
-        /* Autoplay bloccato dal browser: aspettiamo il primo tocco
-           sull'intera pagina per avviare la musica automaticamente. */
-        setIcon(true);
-        document.addEventListener('touchstart', startOnFirstGesture, {once:true, passive:true});
-        document.addEventListener('click', startOnFirstGesture, {once:true});
-      });
+    if(p && p.then){
+      p.then(function(){ setIcon(true); }).catch(function(){ /* bloccato: riproveremo al prossimo gesto */ });
     } else {
       setIcon(true);
     }
   }
 
-  function startOnFirstGesture(){
-    if(userPaused) return;
-    audio.play().then(function(){ setIcon(true); }).catch(function(){});
-  }
+  /* Finche' la musica non e' davvero partita, ogni tocco/click/tasto
+     sull'intera pagina prova a farla partire (i browser bloccano
+     l'autoplay col suono finche' non c'e' un'interazione dell'utente). */
+  function onFirstGesture(){ attemptPlay(); }
+  document.addEventListener('touchstart', onFirstGesture, {passive:true});
+  document.addEventListener('click', onFirstGesture);
+  document.addEventListener('keydown', onFirstGesture);
+  audio.addEventListener('playing', function(){
+    document.removeEventListener('touchstart', onFirstGesture);
+    document.removeEventListener('click', onFirstGesture);
+    document.removeEventListener('keydown', onFirstGesture);
+  });
 
   btn.addEventListener('click', function(){
-    if(audio.paused){
-      userPaused = false;
-      audio.play().then(function(){ setIcon(true); }).catch(function(){});
-    } else {
-      userPaused = true;
+    if(wantsMusic && !audio.paused){
+      wantsMusic = false;
       audio.pause();
       setIcon(false);
+    } else {
+      wantsMusic = true;
+      attemptPlay();
     }
   });
 
-  tryAutoplay();
+  setIcon(true);
+  attemptPlay();
 
   /* Il cerchio dell'altoparlante deve avere lo stesso diametro
      dell'altezza reale della barra di navigazione: la misuriamo e la
