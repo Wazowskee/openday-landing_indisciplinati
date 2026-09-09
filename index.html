@@ -466,6 +466,7 @@
     cursor:pointer; color:var(--ink);
   }
   .modal-close:hover{ background:var(--ink); color:var(--cream); }
+  .modal-close[hidden]{ display:none; }
 
   .modal-eyebrow{
     font-family:'Open Sans',sans-serif; font-weight:600; font-size:1.05rem; letter-spacing:.04em;
@@ -521,8 +522,9 @@
   .consent-row input{ margin-top:.25em; accent-color:var(--curtain); }
 
   .form-nav{ display:flex; justify-content:space-between; align-items:center; gap:.8rem; margin-top:1.5rem; }
+  .form-nav[hidden]{ display:none; }
   .form-nav .btn{ flex:1; }
-  .form-nav .btn-ghost{ flex:0 0 auto; border-color:var(--ink-soft); color:var(--ink-soft); }
+  .form-nav .btn-ghost, .form-success .btn-ghost{ flex:0 0 auto; border-color:var(--ink-soft); color:var(--ink-soft); }
   .form-nav .btn-solid{ background:var(--curtain); border-color:var(--curtain); color:var(--cream); }
   .form-nav .btn-solid:hover{ background:var(--curtain-light); box-shadow:0 8px 20px rgba(124,26,36,.3); }
 
@@ -739,11 +741,11 @@
           <legend>Come ti chiami?</legend>
           <div class="field">
             <label for="f-nome">Nome</label>
-            <input id="f-nome" name="nome" type="text" required autocomplete="given-name">
+            <input id="f-nome" name="nome" type="text" required autocomplete="given-name" placeholder="Valentino">
           </div>
           <div class="field">
             <label for="f-cognome">Cognome</label>
-            <input id="f-cognome" name="cognome" type="text" required autocomplete="family-name">
+            <input id="f-cognome" name="cognome" type="text" required autocomplete="family-name" placeholder="Rossi">
           </div>
           <p class="field-error" data-error-for="1"></p>
         </fieldset>
@@ -752,11 +754,11 @@
           <legend>Ti ricorderemo tramite</legend>
           <div class="field">
             <label for="f-email">Email</label>
-            <input id="f-email" name="email" type="email" required autocomplete="email">
+            <input id="f-email" name="email" type="email" required autocomplete="email" placeholder="rossi@gmail.com">
           </div>
           <div class="field">
             <label for="f-telefono">Telefono (facoltativo)</label>
-            <input id="f-telefono" name="telefono" type="tel" autocomplete="tel" inputmode="numeric">
+            <input id="f-telefono" name="telefono" type="tel" autocomplete="tel" inputmode="numeric" placeholder="393 365 5700">
           </div>
           <p class="field-error" data-error-for="2"></p>
         </fieldset>
@@ -779,7 +781,7 @@
           <span class="icon-badge"><svg class="icon"><use href="#icon-check"/></svg></span>
           <h3>Iscrizione completata con successo</h3>
           <p>Ci vediamo all'Open Day: ti aspettiamo per scoprire insieme i laboratori.</p>
-          <button class="btn btn-solid" id="doneBtn" type="button">Chiudi</button>
+          <button class="btn btn-ghost" id="doneBtn" type="button">Chiudi</button>
         </div>
 
         <div class="form-nav" id="formNav">
@@ -1135,12 +1137,18 @@ window.gtag = gtag;
 
     var webhookUrl = (window.SITE_CONFIG && window.SITE_CONFIG.sheetsWebhookUrl) || '';
     if(webhookUrl){
-      fetch(webhookUrl, {
-        method:'POST',
-        mode:'no-cors',
-        headers:{'Content-Type':'application/x-www-form-urlencoded'},
-        body: params.toString()
-      }).catch(function(){ /* rete non disponibile: l'utente vede comunque la conferma */ });
+      /* Il try/catch e' voluto: in alcuni ambienti (es. anteprime con rete
+         limitata) fetch() puo' generare un errore immediato invece di un
+         semplice rifiuto della promise. Qui non deve mai bloccare la
+         conferma d'iscrizione, che l'utente vede comunque a prescindere. */
+      try {
+        fetch(webhookUrl, {
+          method:'POST',
+          mode:'no-cors',
+          headers:{'Content-Type':'application/x-www-form-urlencoded'},
+          body: params.toString()
+        }).catch(function(){ /* rete non disponibile: l'utente vede comunque la conferma */ });
+      } catch(err){ /* rete bloccata: l'utente vede comunque la conferma */ }
     }
 
     if(window.trackSignupLead) window.trackSignupLead();
