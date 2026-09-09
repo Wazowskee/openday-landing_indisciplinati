@@ -4,33 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Open Day</title>
-<script>
-(function(){
-  function setAppHeight(){
-    var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
-    document.documentElement.style.setProperty('--app-height', h + 'px');
-  }
-  setAppHeight();
-  window.addEventListener('resize', setAppHeight);
-  window.addEventListener('orientationchange', setAppHeight);
-  window.addEventListener('pageshow', setAppHeight);
-  window.addEventListener('load', setAppHeight);
-  document.addEventListener('DOMContentLoaded', setAppHeight);
-  document.addEventListener('visibilitychange', setAppHeight);
-  if(window.visualViewport){
-    window.visualViewport.addEventListener('resize', setAppHeight);
-    window.visualViewport.addEventListener('scroll', setAppHeight);
-  }
-  /* Alcuni browser in-app (es. quello integrato in WhatsApp) riportano
-     un'altezza visibile sbagliata nel primissimo istante, prima che la
-     loro barra degli strumenti si sia assestata: ricontrolliamo per un
-     paio di secondi dopo il caricamento, cosi' la pagina si corregge da
-     sola senza bisogno che l'utente tocchi lo schermo. */
-  [50, 150, 300, 500, 800, 1200, 2000].forEach(function(delay){
-    setTimeout(setAppHeight, delay);
-  });
-})();
-</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fascinate&family=Open+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -82,7 +55,6 @@
     position:relative;
     min-height:100vh;
     min-height:100svh;
-    min-height:var(--app-height, 100svh);
     overflow:hidden;
   }
 
