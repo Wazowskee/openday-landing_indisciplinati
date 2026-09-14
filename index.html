@@ -279,6 +279,10 @@
   }
   .map-caption:hover{ opacity:.8; border-color:var(--white-dim); }
 
+  .meta-group{
+    display:flex; flex-direction:column; align-items:center;
+    gap:.4rem;
+  }
   .meta-line{
     display:flex; align-items:center; gap:.5em;
     font-size:.82rem;
@@ -693,7 +697,10 @@
           <h1 class="title-xl">Open Day</h1>
           <p class="subtitle">Vieni a scoprire i laboratori</p>
           <p class="lede">Un pomeriggio a porte aperte per conoscere i corsi, incontrare chi li insegna e salire per la prima volta su un vero palcoscenico.</p>
-          <p class="meta-line"><svg class="icon"><use href="#icon-calendar"/></svg><span>3 ottobre, dalle 9:00 alle 19:00</span></p>
+          <div class="meta-group">
+            <p class="meta-line"><svg class="icon"><use href="#icon-calendar"/></svg><span>3 ottobre, dalle 18:30</span></p>
+            <p class="meta-line"><svg class="icon"><use href="#icon-pin"/></svg><span>Biblioteca comunale Racale</span></p>
+          </div>
           <div class="cta-row">
             <button class="btn btn-solid" id="openFormBtn" type="button">Prenota il tuo posto</button>
           </div>
