@@ -364,9 +364,12 @@
   .btn-solid:hover{ background:var(--white-hover); transform:translateY(-1px); box-shadow:0 8px 20px rgba(0,0,0,.35);}
   .btn-ghost{ background:transparent; color:var(--white); }
   .btn-ghost:hover{ background:rgba(255,255,255,.08); }
+  .btn-curtain{ background:var(--curtain); color:var(--white); border-color:var(--curtain); text-decoration:none; display:inline-flex; align-items:center; justify-content:center; }
+  .btn-curtain:hover{ background:var(--curtain-light); border-color:var(--curtain-light); transform:translateY(-1px); box-shadow:0 8px 20px rgba(143,14,29,.4); }
   .btn:disabled{opacity:.45; cursor:not-allowed; transform:none; box-shadow:none;}
 
-  .cta-row{margin-top:.4rem;}
+  .cta-row{margin-top:.4rem; display:inline-grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:.8rem;}
+  .cta-row .btn{width:100%;}
 
   h2.page-title{
     font-family:'Josefin Sans',sans-serif;
@@ -652,6 +655,9 @@
   @media (max-width:480px){
     .address-line{ white-space:normal; }
   }
+  @media (max-width:600px){
+    .cta-row{ grid-auto-flow:row; }
+  }
 
   @media (max-width:420px){
     .dock-btn span{ display:none; }
@@ -759,6 +765,7 @@
           </div>
           <div class="cta-row">
             <button class="btn btn-solid" id="openFormBtn" type="button">Prenota il tuo posto</button>
+            <a class="btn btn-curtain" href="programma-docenti.pdf" download>Scopri i docenti</a>
           </div>
         </section>
 
@@ -859,6 +866,7 @@
             <label class="check-row"><input type="checkbox" name="laboratori" value="Benessere"><span>Benessere</span></label>
             <label class="check-row"><input type="checkbox" name="laboratori" value="Cinematografia"><span>Cinematografia</span></label>
             <label class="check-row"><input type="checkbox" name="laboratori" value="Danza"><span>Danza</span></label>
+            <label class="check-row"><input type="checkbox" name="laboratori" value="Chitarra"><span>Chitarra</span></label>
           </div>
           <label class="consent-row">
             <input type="checkbox" id="f-consenso" name="consenso" required>
